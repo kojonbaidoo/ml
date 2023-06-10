@@ -27,20 +27,15 @@ int main(void){
     }
 
     // Model creation
-    Model xor;
-    xor.layers = 2;
+    size_t layers = 2;
 
-    xor.w = malloc(xor.layers * sizeof(Matrix));
-    xor.b = malloc(xor.layers * sizeof(Matrix));
-    xor.a = malloc(xor.layers * sizeof(Matrix));
+    // Layer params : {num_inputs, num_neurons, activation}
+    int model_params[][3] = {
+        {2,2,SIGMOID},
+        {2,1,SIGMOID}
+    };
 
-    xor.w[0] = mat_alloc(2,2);
-    xor.b[0] = mat_alloc(2,1);
-    xor.a[0] = mat_alloc(2,1);
-
-    xor.w[1] = mat_alloc(1,2);
-    xor.b[1] = mat_alloc(1,1);
-    xor.a[1] = mat_alloc(1,1);
+    Model xor = model_alloc(model_params, 2);
 
     for(int layer = 0; layer < xor.layers; layer++){
         mat_rand(xor.w[layer]);

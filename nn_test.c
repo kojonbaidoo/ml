@@ -13,6 +13,7 @@ void mat_fill_test();
 
 void sigmoid_f_test();
 void mat_sigmoid_f_test();
+void model_alloc_test();
 
 int main(void){
     mat_alloc_test();
@@ -23,6 +24,7 @@ int main(void){
     mat_fill_test();
     sigmoid_f_test();
     mat_sigmoid_f_test();
+    model_alloc_test();
     return 0;
 }
 
@@ -181,6 +183,36 @@ void mat_sigmoid_f_test(){
 
     printf("Tests Passed - mat_sigmoid_f: 0 matrix\n");
 }
+
+void model_alloc_test(){
+    size_t layers = 2;
+
+    // Layer params : {num_inputs, num_neurons, activation}
+    int model_params[][3] = {
+        {2,2,SIGMOID},
+        {2,1,SIGMOID}
+    };
+
+    Model model = model_alloc(model_params, 2);
+
+    assert(model.layers == 2);
+    assert(model.w[0].rows == 2);
+    assert(model.w[0].cols == 2);
+    assert(model.b[0].rows == 2);
+    assert(model.b[0].cols == 1);
+    assert(model.a[0].rows == 2);
+    assert(model.a[0].cols == 1);
+
+    assert(model.w[1].rows == 1);
+    assert(model.w[1].cols == 2);
+    assert(model.b[1].rows == 1);
+    assert(model.b[1].cols == 1);
+    assert(model.a[1].rows == 1);
+    assert(model.a[1].cols == 1);
+
+    printf("Tests Passed - model_alloc: 2 xor model\n");
+}
+
 
 void sigmoid_f_test(){
     assert(0.5 == sigmoid_f(0.0));

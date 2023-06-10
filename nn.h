@@ -148,6 +148,24 @@ void mat_free(Matrix mat){
     free(mat.vals);
 }
 
+Model model_alloc(int (*params)[3], size_t layers){
+    Model m;
+    m.layers = layers;
+
+    m.w = malloc(m.layers * sizeof(Matrix));
+    m.b = malloc(m.layers * sizeof(Matrix));
+    m.a = malloc(m.layers * sizeof(Matrix));
+
+    // params: {num_inputs, num_neurons, activation}
+    for(int layer = 0;layer < layers;layer++){
+        m.w[layer] = mat_alloc(params[layer][1], params[layer][0]);
+        m.b[layer] = mat_alloc(params[layer][1], 1);
+        m.a[layer] = mat_alloc(params[layer][1], 1);
+    }
+
+    return m;
+}
+
 float cost(Model m, Matrix td_x, Matrix td_y){
     assert(td_x.cols == td_y.cols);
 
