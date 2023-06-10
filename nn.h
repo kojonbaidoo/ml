@@ -13,9 +13,18 @@ typedef struct {
     float *vals;
 } Matrix;
 
+typedef struct {
+    size_t layers;
+    Matrix *w;
+    Matrix *b;
+    Matrix *a;
+} Model
+
 float rand_float();
 float sigmoid_f(float value);
 float sigmoid_f_deriv(float value);
+float cost(Model m, Matrix td_x, Matrix td_y);
+void forward(Model m, Matrix input);
 
 #ifndef NN_H_
 Matrix mat_alloc(size_t rows, size_t cols);
@@ -138,6 +147,44 @@ void mat_sigmoid_f(Matrix mat1, Matrix mat0){
 void mat_free(Matrix mat){
     free(mat.vals);
 }
+
+float cost(Model m, Matrix td_x, Matrix td_y){
+    size_t num_data = td_x.cols;
+    Matrix x = mat_alloc(td_x.rows, 1);
+    Matrix y = mat_alloc(td_y.rows, 1);
+
+    float cost = 0.0;
+    float d = 0;
+
+    for(int t_col = 0; t_col < num_data; t_col++){
+        for(int x_index = 0; x_index < td_x.rows;x_index++){
+            MAT_INDEX(x,x_index,0) = MAT_INDEX(td_x,x_index,t_col);
+        }
+        for(int y_index = 0; y_index < td_y.rows;y_index++){
+            MAT_INDEX(y,y_index,0) = MAT_INDEX(td_y,y_index,t_col);
+        }
+
+        forward(m,x);
+
+        d = MAT_INDEX(m.a[m.layers - 1],0,0) - MAT_INDEX(y,0,0);// Change this to work for a matrix of costs
+        cost += d * d;
+    }
+
+    return cost;
+}
+
+void forward(Model m, Matrix input){
+    for(int i = 0; i < m.layers; i++){
+        if(i == 0){
+            mat_dot(m.a[i], m.w[i], input);}
+        else{
+            mat_dot(m.a[i], m.w[i], m.a[i-1]);}
+        
+        mat_sum(m.a[i], m.b[i], m.a[i]);
+        mat_sigmoid_f(m.a[i], m.a[i]);
+    }   
+}
+
 
 float sigmoid_f(float value){
     return 1.0 / (1.0 + expf(-value));
