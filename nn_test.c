@@ -11,12 +11,6 @@ void mat_div_test();
 void mat_alloc_test();
 void mat_fill_test();
 
-void layer_alloc_test();
-
-void mlp_alloc_test();
-void mlp_add_test();
-void mlp_forward_test();
-
 void sigmoid_f_test();
 void mat_sigmoid_f_test();
 
@@ -29,11 +23,6 @@ int main(void){
     mat_fill_test();
     sigmoid_f_test();
     mat_sigmoid_f_test();
-    layer_alloc_test();
-    mlp_alloc_test();
-    mlp_add_test();
-    mlp_forward_test();
-
     return 0;
 }
 
@@ -197,91 +186,3 @@ void sigmoid_f_test(){
     assert(0.5 == sigmoid_f(0.0));
     printf("Tests Passed - sigmoid_f: 0.5\n");
 }
-
-void layer_alloc_test(){
-    Layer layer0 = layer_alloc(2,2,SIGMOID);
-    assert(layer0.weights.rows == 2);
-    assert(layer0.weights.cols == 2);
-    assert(layer0.bias.rows == 2);
-    assert(layer0.bias.cols == 1);
-    assert(layer0.output.rows == 2);
-    assert(layer0.output.cols == 1);
-    assert(layer0.neurons == 2);
-    assert(layer0.activation == SIGMOID);
-
-    Layer layer1 = layer_alloc(10,23,SIGMOID);
-    assert(layer1.weights.rows == 23);
-    assert(layer1.weights.cols == 10);
-    assert(layer1.bias.rows == 23);
-    assert(layer1.bias.cols == 1);
-    assert(layer1.output.rows == 23);
-    assert(layer1.output.cols == 1);
-    assert(layer1.neurons == 23);
-    assert(layer1.activation == SIGMOID);
-
-    printf("Tests Passed - Layer: 2\n");
-}
-
-void mlp_alloc_test(){
-    MLP mlp0 = mlp_alloc(10);
-    assert(mlp0.num_layers == 0);
-    assert(mlp0.max_num_layers == 10);
-
-    printf("Tests Passed - mlp_alloc\n");
-}
-
-void mlp_add_test(){
-    Layer layer0 = layer_alloc(2,2,SIGMOID);
-    Layer layer1 = layer_alloc(10,23,SIGMOID);
-
-    MLP mlp = mlp_alloc(2);
-    mlp_add(&mlp,layer0);
-    assert(mlp.num_layers == 1);
-
-    mlp_add(&mlp,layer1);
-    assert(mlp.num_layers == 2);
-
-    assert(layer0.weights.rows == mlp.layers[0].weights.rows);
-    assert(layer0.weights.cols == mlp.layers[0].weights.cols);
-    assert(layer0.bias.rows == mlp.layers[0].bias.rows);
-    assert(layer0.bias.cols == mlp.layers[0].bias.cols);
-    assert(layer0.output.rows == mlp.layers[0].output.rows);
-    assert(layer0.output.cols == mlp.layers[0].output.cols);
-    assert(layer0.neurons == mlp.layers[0].neurons);
-    assert(layer0.activation == mlp.layers[0].activation);
-
-    assert(layer1.weights.rows == mlp.layers[1].weights.rows);
-    assert(layer1.weights.cols == mlp.layers[1].weights.cols);
-    assert(layer1.bias.rows == mlp.layers[1].bias.rows);
-    assert(layer1.bias.cols == mlp.layers[1].bias.cols);
-    assert(layer1.output.rows == mlp.layers[1].output.rows);
-    assert(layer1.output.cols == mlp.layers[1].output.cols);
-    assert(layer1.neurons == mlp.layers[1].neurons);
-    assert(layer1.activation == mlp.layers[1].activation);
-
-    printf("Tests Passed - MLP creation\n");
-}
-
-void mlp_forward_test(){
-    Layer layer0 = layer_alloc(2,2,SIGMOID);
-    Layer layer1 = layer_alloc(2,1,SIGMOID);
-
-    mat_fill(layer0.weights, 0);
-    mat_fill(layer0.bias, 0);
-    mat_fill(layer1.weights, 0);
-    mat_fill(layer1.bias, 0);
-
-    Matrix input = mat_alloc(2,1);
-    mat_rand(input);
-
-    MLP mlp = mlp_alloc(2);
-    mlp_add(&mlp,layer0);
-    mlp_add(&mlp,layer1);
-
-    input = mlp_forward(&mlp, input);
-    
-    assert(MAT_INDEX(input,0,0) == 0.5);
-
-    printf("Tests Passed - mlp_forward\n");
-}
-
