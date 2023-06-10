@@ -39,6 +39,9 @@ void mat_sigmoid_f(Matrix m0, Matrix m1);
 
 void mat_free(Matrix mat);
 
+Model model_alloc(int (*params)[3], size_t layers);
+void model_free(Model model);
+
 #define NN_H_
 
 #define MAT_INDEX(MAT,ROW,COL) MAT.vals[(ROW) * (MAT.cols) + (COL)]
@@ -108,6 +111,7 @@ void mat_div(Matrix mat2, Matrix mat0, float value){
 void mat_print(Matrix mat){
     printf("[\n");
     for(int row = 0; row < mat.rows;row++){
+        printf("\t");
         for(int col = 0; col < mat.cols; col++){
             printf("%f ", mat.vals[(row * mat.cols) + col]);
         }
@@ -158,14 +162,37 @@ Model model_alloc(int (*params)[3], size_t layers){
 
     // params: {num_inputs, num_neurons, activation}
     for(int layer = 0;layer < layers;layer++){
+        if(layer > 0){assert(params[layer][0] == params[layer - 1][1]);}// Inputs in the current layer should match neurons in the last layer
+
         m.w[layer] = mat_alloc(params[layer][1], params[layer][0]);
         m.b[layer] = mat_alloc(params[layer][1], 1);
-        m.a[layer] = mat_alloc(params[layer][1], 1);
+        // m.a[layer] = mat_alloc(params[layer][1], 1);
     }
 
     return m;
 }
 
+void model_print(Model model){
+    for(int layer = 0;layer < model.layers; layer++){
+        printf("-------------------- Layer: %d --------------------\n",layer);
+        printf("w%d = ",layer);
+        mat_print(model.w[layer]);
+
+        printf("b%d = ",layer);
+        mat_print(model.b[layer]);
+
+        printf("a%d = ",layer);
+        mat_print(model.a[layer]);
+    }
+}
+
+void model_free(Model model){
+    for(int layer = 0;layer < model.layers; layer++){
+        mat_free(model.w[layer]);
+        mat_free(model.b[layer]);
+        mat_free(model.a[layer]);
+    }
+}
 float cost(Model m, Matrix td_x, Matrix td_y){
     assert(td_x.cols == td_y.cols);
 

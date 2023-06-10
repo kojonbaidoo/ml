@@ -27,14 +27,11 @@ int main(void){
     }
 
     // Model creation
-    size_t layers = 2;
-
     // Layer params : {num_inputs, num_neurons, activation}
     int model_params[][3] = {
         {2,2,SIGMOID},
         {2,1,SIGMOID}
     };
-
     Model xor = model_alloc(model_params, 2);
 
     for(int layer = 0; layer < xor.layers; layer++){
@@ -42,6 +39,9 @@ int main(void){
         mat_rand(xor.b[layer]);
         mat_rand(xor.a[layer]);
     }
+
+    model_print(xor);
+    return 0;
 
     Matrix input = mat_alloc(td_x.rows, 1);
     MAT_INDEX(input,0,0) = 1;
