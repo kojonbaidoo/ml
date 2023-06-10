@@ -18,7 +18,7 @@ typedef struct {
     Matrix *w;
     Matrix *b;
     Matrix *a;
-} Model
+} Model;
 
 float rand_float();
 float sigmoid_f(float value);
@@ -149,6 +149,8 @@ void mat_free(Matrix mat){
 }
 
 float cost(Model m, Matrix td_x, Matrix td_y){
+    assert(td_x.cols == td_y.cols);
+
     size_t num_data = td_x.cols;
     Matrix x = mat_alloc(td_x.rows, 1);
     Matrix y = mat_alloc(td_y.rows, 1);
@@ -165,15 +167,22 @@ float cost(Model m, Matrix td_x, Matrix td_y){
         }
 
         forward(m,x);
-
-        d = MAT_INDEX(m.a[m.layers - 1],0,0) - MAT_INDEX(y,0,0);// Change this to work for a matrix of costs
-        cost += d * d;
+        
+        for(int out_index = 0; out_index < y.rows; out_index++){
+            d = MAT_INDEX(m.a[m.layers - 1],out_index,0) - MAT_INDEX(y,out_index,0);
+            cost += d * d;
+        }
     }
 
-    return cost;
+    mat_free(x);
+    mat_free(y);
+
+    return cost / num_data;
 }
 
 void forward(Model m, Matrix input){
+    assert(m.w[0].cols == input.rows);
+
     for(int i = 0; i < m.layers; i++){
         if(i == 0){
             mat_dot(m.a[i], m.w[i], input);}

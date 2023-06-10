@@ -24,6 +24,37 @@ int main(void){
             MAT_INDEX(td_x,j,i) = training_data[i][j];
         }
         MAT_INDEX(td_y,0,i) = training_data[i][j];
-    }   
+    }
+
+    // Model creation
+    Model xor;
+    xor.layers = 2;
+
+    xor.w = malloc(xor.layers * sizeof(Matrix));
+    xor.b = malloc(xor.layers * sizeof(Matrix));
+    xor.a = malloc(xor.layers * sizeof(Matrix));
+
+    xor.w[0] = mat_alloc(2,2);
+    xor.b[0] = mat_alloc(2,1);
+    xor.a[0] = mat_alloc(2,1);
+
+    xor.w[1] = mat_alloc(1,2);
+    xor.b[1] = mat_alloc(1,1);
+    xor.a[1] = mat_alloc(1,1);
+
+    for(int layer = 0; layer < xor.layers; layer++){
+        mat_rand(xor.w[layer]);
+        mat_rand(xor.b[layer]);
+        mat_rand(xor.a[layer]);
+    }
+
+    Matrix input = mat_alloc(td_x.rows, 1);
+    MAT_INDEX(input,0,0) = 1;
+    MAT_INDEX(input,1,0) = 1;
+
+    forward(xor, input);
+    float mse = cost(xor,td_x,td_y);
+    printf("%f\n",mse);
+
     return 0;
 }
