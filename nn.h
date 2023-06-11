@@ -32,6 +32,8 @@ void mat_dot(Matrix mat3, Matrix mat1, Matrix mat2);
 void mat_sum(Matrix mat2, Matrix mat1, Matrix mat0);
 void mat_diff(Matrix mat2, Matrix mat0, Matrix mat1);
 void mat_div(Matrix mat2, Matrix mat0, float value);
+void mat_mult(Matrix mat2, Matrix mat0, float value);
+void mat_mult_elem(Matrix mat2, Matrix mat0, Matrix mat1);
 void mat_print(Matrix mat);
 void mat_rand(Matrix m);
 void mat_fill(Matrix mat, float value);
@@ -97,6 +99,21 @@ void mat_diff(Matrix mat2, Matrix mat0, Matrix mat1){
     }
 }
 
+void mat_mult(Matrix mat2, Matrix mat0, float value){
+    mat_div(mat2, mat0, (1/value));
+}
+
+void mat_mult_elem(Matrix mat2, Matrix mat0, Matrix mat1){
+    assert(mat0.rows == mat1.rows);
+    assert(mat0.cols == mat1.cols);
+
+    for(int row = 0; row < mat0.rows; row++){
+        for(int col = 0; col < mat0.cols; col++){
+            MAT_INDEX(mat2, row, col) = MAT_INDEX(mat0, row, col) * MAT_INDEX(mat1, row, col);
+        }
+    }
+
+}
 void mat_div(Matrix mat2, Matrix mat0, float value){
     assert(mat0.rows == mat2.rows);
     assert(mat0.cols == mat2.cols);
@@ -137,6 +154,18 @@ void mat_fill(Matrix mat, float value){
     }
 }
 
+Matrix mat_transpose(Matrix mat){
+    Matrix new_mat = mat_alloc(mat.cols, mat.rows);
+
+    for(int row = 0; row < mat.rows; row++){
+        for(int col = 0; col < mat.cols; col++){
+            MAT_INDEX(new_mat, col, row) = MAT_INDEX(mat,row,col);
+        }
+    }
+
+    return new_mat;
+}
+
 void mat_sigmoid_f(Matrix mat1, Matrix mat0){
     assert(mat0.rows == mat1.rows);
     assert(mat0.cols == mat1.cols);
@@ -166,7 +195,7 @@ Model model_alloc(int (*params)[3], size_t layers){
 
         m.w[layer] = mat_alloc(params[layer][1], params[layer][0]);
         m.b[layer] = mat_alloc(params[layer][1], 1);
-        // m.a[layer] = mat_alloc(params[layer][1], 1);
+        m.a[layer] = mat_alloc(params[layer][1], 1);
     }
 
     return m;

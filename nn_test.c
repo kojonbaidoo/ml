@@ -10,6 +10,7 @@ void mat_diff_test();
 void mat_div_test();
 void mat_alloc_test();
 void mat_fill_test();
+void mat_transpose_test();
 
 void sigmoid_f_test();
 void mat_sigmoid_f_test();
@@ -22,6 +23,7 @@ int main(void){
     mat_diff_test();
     mat_div_test();
     mat_fill_test();
+    mat_transpose_test();
     sigmoid_f_test();
     mat_sigmoid_f_test();
     model_alloc_test();
@@ -184,6 +186,44 @@ void mat_sigmoid_f_test(){
     printf("Tests Passed - mat_sigmoid_f: 0 matrix\n");
 }
 
+void mat_transpose_test(){
+    Matrix mat0 = mat_alloc(2,2);
+    Matrix mat0_t;
+    mat0_t = mat_transpose(mat0);
+
+    for(int row = 0; row < mat0.rows;row++){
+        for(int col = 0; col < mat0.cols; col++){
+            assert(MAT_INDEX(mat0,row,col) == MAT_INDEX(mat0_t,col,row));
+        }
+    }
+    mat_free(mat0);
+    mat_free(mat0_t);
+
+    mat0 = mat_alloc(20,2);
+    mat0_t = mat_transpose(mat0);
+
+    for(int row = 0; row < mat0.rows;row++){
+        for(int col = 0; col < mat0.cols; col++){
+            assert(MAT_INDEX(mat0,row,col) == MAT_INDEX(mat0_t,col,row));
+        }
+    }
+    mat_free(mat0);
+    mat_free(mat0_t);
+
+    mat0 = mat_alloc(2,21);
+    mat0_t = mat_transpose(mat0);
+
+    for(int row = 0; row < mat0.rows;row++){
+        for(int col = 0; col < mat0.cols; col++){
+            assert(MAT_INDEX(mat0,row,col) == MAT_INDEX(mat0_t,col,row));
+        }
+    }
+    mat_free(mat0);
+    mat_free(mat0_t);
+
+    printf("Tests Passed - mat_transpose\n");
+}
+
 void model_alloc_test(){
     size_t layers = 2;
 
@@ -193,7 +233,7 @@ void model_alloc_test(){
         {2,1,SIGMOID}
     };
 
-    Model model = model_alloc(model_params, 2);
+    Model model = model_alloc(model_params, layers);
 
     assert(model.layers == 2);
     assert(model.w[0].rows == 2);
