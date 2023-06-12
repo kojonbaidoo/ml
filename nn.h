@@ -7,6 +7,7 @@
 #define SIGMOID 0
 #define RELU 1
 #define PARAM_COUNT(PARAMS) (sizeof(PARAMS) / sizeof(PARAMS[0]))
+#define MAT_INDEX(MAT,ROW,COL) MAT.vals[(ROW) * (MAT.cols) + (COL)]
 
 typedef struct {
     size_t rows;
