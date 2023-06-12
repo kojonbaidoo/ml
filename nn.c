@@ -33,15 +33,8 @@ int main(void){
         {2,1,SIGMOID}
     };
     Model xor = model_alloc(model_params, PARAM_COUNT(model_params));
-
-    float mse;
-    for(int epoch = 0; epoch < 1000; epoch++){
-        backpropagation(xor,td_x,td_y,1);
-        mse = cost(xor,td_x,td_y);       
-        if(mse < 0.01){
-            break;
-        }
-    }
+    model_train(xor, td_x, td_y,0.1,1000);
+    float mse = cost(xor, td_x, td_y);
     printf("%f\n",mse);
 
 

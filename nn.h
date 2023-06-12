@@ -26,6 +26,7 @@ float sigmoid_f(float value);
 float sigmoid_f_deriv(float value);
 float cost(Model m, Matrix td_x, Matrix td_y);
 void forward(Model m, Matrix input);
+void backpropagation(Model m, Matrix td_x, Matrix td_y, float lr);
 
 #ifndef NN_H_
 Matrix mat_alloc(size_t rows, size_t cols);
@@ -44,6 +45,7 @@ void mat_sigmoid_f_deriv(Matrix m0, Matrix m1);
 void mat_free(Matrix mat);
 
 Model model_alloc(int (*params)[3], size_t layers);
+void model_train(Model m, Matrix td_x, Matrix td_y, float lr, size_t epochs);
 void model_free(Model model);
 
 #define NN_H_
@@ -233,6 +235,12 @@ void model_free(Model model){
         mat_free(model.w[layer]);
         mat_free(model.b[layer]);
         mat_free(model.a[layer]);
+    }
+}
+
+void model_train(Model m, Matrix td_x, Matrix td_y, float lr, size_t epochs){
+    for(int epoch = 0; epoch < epochs; epoch++){
+        backpropagation(m,td_x,td_y,1);
     }
 }
 
