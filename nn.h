@@ -6,6 +6,7 @@
 
 #define SIGMOID 0
 #define RELU 1
+#define PARAM_COUNT(PARAMS) (sizeof(PARAMS) / sizeof(PARAMS[0]))
 
 typedef struct {
     size_t rows;
@@ -38,6 +39,7 @@ void mat_print(Matrix mat);
 void mat_rand(Matrix m);
 void mat_fill(Matrix mat, float value);
 void mat_sigmoid_f(Matrix m0, Matrix m1);
+void mat_sigmoid_f_deriv(Matrix m0, Matrix m1);
 
 void mat_free(Matrix mat);
 
@@ -177,6 +179,17 @@ void mat_sigmoid_f(Matrix mat1, Matrix mat0){
     }
 }
 
+void mat_sigmoid_f_deriv(Matrix mat1, Matrix mat0){
+    assert(mat0.rows == mat1.rows);
+    assert(mat0.cols == mat1.cols);
+
+    for(int row = 0; row < mat0.rows;row++){
+        for(int col = 0; col < mat0.cols; col++){
+            MAT_INDEX(mat1,row,col) = sigmoid_f_deriv(MAT_INDEX(mat0,row,col));
+        }
+    }
+}
+
 void mat_free(Matrix mat){
     free(mat.vals);
 }
@@ -222,6 +235,86 @@ void model_free(Model model){
         mat_free(model.a[layer]);
     }
 }
+
+void backpropagation(Model m, Matrix td_x, Matrix td_y, float lr){
+    Matrix *error = malloc(m.layers * sizeof(Matrix));
+    Matrix *dW = malloc(m.layers * sizeof(Matrix));
+    Matrix *dB = malloc(m.layers * sizeof(Matrix));
+    Matrix x = mat_alloc(td_x.rows, 1);
+    Matrix y = mat_alloc(td_y.rows, 1);
+
+    for(int layer = 0; layer < m.layers; layer++){
+        dW[layer] = mat_alloc(m.w[layer].rows, m.w[layer].cols);
+        dB[layer] = mat_alloc(m.b[layer].rows, m.b[layer].cols);
+    }
+
+    for(int t_col = 0; t_col < td_x.cols; t_col++){
+        for(int x_index = 0; x_index < td_x.rows;x_index++){
+            MAT_INDEX(x,x_index,0) = MAT_INDEX(td_x,x_index,t_col);
+        }
+        for(int y_index = 0; y_index < td_y.rows;y_index++){
+            MAT_INDEX(y,y_index,0) = MAT_INDEX(td_y,y_index,t_col);
+        }
+
+        forward(m, x);
+
+        for(int layer = m.layers - 1; layer >= 0; layer--){
+            if(layer == m.layers - 1){
+                Matrix tmp = mat_alloc(m.a[layer].rows, m.a[layer].cols);
+                error[layer] = mat_alloc(y.rows, y.cols);
+                mat_diff(error[layer], y, m.a[layer]);
+                mat_mult(error[layer], error[layer], -2);
+                mat_sigmoid_f_deriv(tmp, m.a[layer]);
+                mat_mult_elem(error[layer], error[layer], tmp);
+                
+                mat_free(tmp);
+            }
+            else{
+                Matrix tmp = mat_alloc(m.a[layer].rows, m.a[layer].cols);
+                error[layer] = mat_alloc(error[layer+1].rows,  m.w[layer+1].cols);
+                mat_dot(error[layer], error[layer+1], m.w[layer+1]);
+                mat_sigmoid_f_deriv(tmp, m.a[layer]);
+                mat_mult_elem(error[layer], error[layer], mat_transpose(tmp));
+
+                mat_free(tmp);
+            }
+        }
+
+        for(int layer = 0; layer < m.layers; layer++){
+
+            if(layer == 0){
+                Matrix tmp = mat_alloc(td_x.rows, error[layer].cols);
+                mat_dot(tmp, x, error[layer]);
+                mat_sum(dW[layer],dW[layer], mat_transpose(tmp));
+                mat_sum(dB[layer],dB[layer], mat_transpose(error[layer]));
+                mat_free(tmp);
+            }
+
+            else{
+                Matrix tmp = mat_alloc(m.a[layer - 1].rows, error[layer].cols);
+                mat_dot(tmp, m.a[layer - 1], error[layer]);
+                mat_sum(dW[layer],dW[layer], mat_transpose(tmp));
+                mat_sum(dB[layer],dB[layer], mat_transpose(error[layer]));
+                mat_free(tmp);
+            }
+
+        }
+    }
+    
+    for(int layer = 0; layer < m.layers;layer++){
+        mat_mult(dW[layer], dW[layer], (lr/td_x.cols));
+        mat_diff(m.w[layer], m.w[layer], dW[layer]);
+        mat_diff(m.b[layer], m.b[layer], dB[layer]); 
+    }
+
+    free(dW);
+    free(dB);
+    free(error);
+
+    mat_free(x);
+    mat_free(y);
+}
+
 float cost(Model m, Matrix td_x, Matrix td_y){
     assert(td_x.cols == td_y.cols);
 
@@ -274,7 +367,7 @@ float sigmoid_f(float value){
 }
 
 float sigmoid_f_deriv(float value){
-    return sigmoid_f(value) * (1 - sigmoid_f(value));
+    return value * (1 - value);
 }
 
 float rand_float(){

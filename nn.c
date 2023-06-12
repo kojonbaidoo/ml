@@ -32,24 +32,18 @@ int main(void){
         {2,2,SIGMOID},
         {2,1,SIGMOID}
     };
-    Model xor = model_alloc(model_params, 2);
+    Model xor = model_alloc(model_params, PARAM_COUNT(model_params));
 
-    for(int layer = 0; layer < xor.layers; layer++){
-        mat_rand(xor.w[layer]);
-        mat_rand(xor.b[layer]);
-        mat_rand(xor.a[layer]);
+    float mse;
+    for(int epoch = 0; epoch < 1000; epoch++){
+        backpropagation(xor,td_x,td_y,1);
+        mse = cost(xor,td_x,td_y);       
+        if(mse < 0.01){
+            break;
+        }
     }
-
-    model_print(xor);
-    return 0;
-
-    Matrix input = mat_alloc(td_x.rows, 1);
-    MAT_INDEX(input,0,0) = 1;
-    MAT_INDEX(input,1,0) = 1;
-
-    forward(xor, input);
-    float mse = cost(xor,td_x,td_y);
     printf("%f\n",mse);
+
 
     return 0;
 }
