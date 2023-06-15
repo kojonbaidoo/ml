@@ -8,9 +8,9 @@
 
 float training_data[TRAINING_SAMPLE_SIZE][3] = {
     {0,0,0},
-    {0,1,0},
-    {1,0,0},
-    {1,1,1},
+    {0,1,1},
+    {1,0,1},
+    {1,1,0},
 };
 
 int main(void){
@@ -27,8 +27,16 @@ int main(void){
 }   
 
     Layer layer0 = layer_alloc(2,1,SIGMOID);
+    // Layer layer1 = layer_alloc(2,1,SIGMOID);
+
     MLP mlp = mlp_alloc(1);
+    
     mlp_add(&mlp,layer0);
+    // mlp_add(&mlp,layer1);
+
+    mat_print(mlp_cost(mlp,td_x,td_y));
+    mlp_train(mlp,td_x,td_y,1,10);
+    // mat_print(mlp_cost(mlp,td_x,td_y));
 
     return 0;
 }

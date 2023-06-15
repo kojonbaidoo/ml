@@ -278,9 +278,9 @@ void mlp_forward_test(){
     mlp_add(&mlp,layer0);
     mlp_add(&mlp,layer1);
 
-    input = mlp_forward(&mlp, input);
+    mlp_forward(mlp, input);
     
-    assert(MAT_INDEX(input,0,0) == 0.5);
+    assert(MAT_INDEX(mlp.layers[mlp.num_layers - 1].output,0,0) == 0.5);
 
     printf("Tests Passed - mlp_forward\n");
 }

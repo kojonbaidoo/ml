@@ -36,7 +36,9 @@ Layer layer_alloc(size_t num_inputs, size_t num_neurons, int activation);
 
 MLP mlp_alloc(size_t num_layers);
 void mlp_add(MLP *mlp, Layer layer);
-mlp_forward(MLP *mlp, Matrix input);
+void mlp_forward(MLP mlp, Matrix input);
+void mlp_train(MLP m, Matrix td_x, Matrix td_y, float lr, size_t epochs);
+void mlp_backprop(MLP mlp, Matrix td_x, Matrix td_y, float lr);
 MLP mlp_copy(MLP mlp);
 
 #ifndef NN_H_
@@ -198,10 +200,6 @@ void mat_sigmoid_f_deriv(Matrix mat1, Matrix mat0){
     }
 }
 
-void mat_free(Matrix mat){
-    free(mat.vals);
-}
-
 Layer layer_alloc(size_t num_inputs, size_t num_neurons, int activation){
     Layer layer;
     layer.neurons = num_neurons;
@@ -209,6 +207,10 @@ Layer layer_alloc(size_t num_inputs, size_t num_neurons, int activation){
     layer.bias = mat_alloc(num_neurons, 1);
     layer.output = mat_alloc(num_neurons, 1);
     layer.activation = activation;
+
+    mat_fill(layer.weights,0);
+    mat_fill(layer.bias,0);
+    mat_fill(layer.output,0);
     return layer;
 }
 
@@ -227,14 +229,14 @@ void mlp_add(MLP *mlp, Layer layer){
     mlp->num_layers = mlp->num_layers + 1;
 }
 
-void mlp_forward(MLP *mlp, Matrix input){
-    for(int i = 0; i < mlp->num_layers;i++){
-        mat_dot(mlp->layers[i].output, mlp->layers[i].weights, input);
-        mat_sum(mlp->layers[i].output, mlp->layers[i].bias, mlp->layers[i].output);
-        if(mlp->layers[i].activation == SIGMOID){
-            mat_sigmoid_f(mlp->layers[i].output, mlp->layers[i].output);
+void mlp_forward(MLP mlp, Matrix input){
+    for(int i = 0; i < mlp.num_layers;i++){
+        mat_dot(mlp.layers[i].output, mlp.layers[i].weights, input);
+        mat_sum(mlp.layers[i].output, mlp.layers[i].bias, mlp.layers[i].output);
+        if(mlp.layers[i].activation == SIGMOID){
+            mat_sigmoid_f(mlp.layers[i].output, mlp.layers[i].output);
         }
-        input = mlp->layers[i].output;
+        input = mlp.layers[i].output;
     }
 }
 
@@ -242,6 +244,10 @@ Matrix mlp_cost(MLP mlp, Matrix td_input, Matrix td_output){
     Matrix distance = mat_alloc(td_output.rows,1);;
     Matrix error = mat_alloc(td_output.rows,1);
     Matrix mse = mat_alloc(td_output.rows,1);
+    
+    mat_fill(mse,0);
+    // mat_fill(distance,0);
+    // mat_fill(error,0);
 
     Matrix x = mat_alloc(td_input.rows, 1);
     Matrix out = mat_alloc(td_output.rows,1);
@@ -250,27 +256,111 @@ Matrix mlp_cost(MLP mlp, Matrix td_input, Matrix td_output){
 
     for(int col = 0; col < td_input.cols;col++){
         for(int row = 0; row < td_input.rows;row++){
-            MAT_INDEX(x,row,1) = MAT_INDEX(td_input,row,col);
+            MAT_INDEX(x,row,0) = MAT_INDEX(td_input,row,col);
         }
         
         for(int row = 0; row < td_output.rows;row++){
-            MAT_INDEX(out,row,1) = MAT_INDEX(td_output,row,col);
+            MAT_INDEX(out,row,0) = MAT_INDEX(td_output,row,col);
         }
 
-        mlp_forward(&mlp, x);
+        mlp_forward(mlp, x);
         
         mat_diff(distance,out,mlp.layers[mlp.num_layers - 1].output);
-        mat_dot(error,distance,distance);// I don't think this has to be matmul
+        mat_mult_elem(error,distance,distance);// I don't think this has to be matmul
         mat_sum(mse,mse,error);
-    }
 
+    }
     mat_div(mse,mse,td_input.cols);
 
     return mse;
 }
 
-void mlp_backprop(MLP *mlp, Matrix td_x, Matrix td_y, float lr){
+void mlp_train(MLP m, Matrix td_x, Matrix td_y, float lr, size_t epochs){
+    for(int epoch = 0; epoch < epochs; epoch++){
+        mlp_backprop(m,td_x,td_y,lr);
+        mat_print(mlp_cost(m,td_x,td_y));
+    }
+}
 
+void mlp_backprop(MLP mlp, Matrix td_x, Matrix td_y, float lr){
+    Matrix *error = malloc(mlp.num_layers * sizeof(Matrix));
+    Matrix *dW = malloc(mlp.num_layers * sizeof(Matrix));
+    Matrix *dB = malloc(mlp.num_layers * sizeof(Matrix));
+    Matrix x = mat_alloc(td_x.rows, 1);
+    Matrix y = mat_alloc(td_y.rows, 1);
+
+    for(int layer = 0; layer < mlp.num_layers; layer++){
+        dW[layer] = mat_alloc(mlp.layers[layer].weights.rows, mlp.layers[layer].weights.cols);
+        dB[layer] = mat_alloc(mlp.layers[layer].bias.rows, mlp.layers[layer].bias.cols);
+
+        // mat_fill(dW[layer],0);
+        // mat_fill(dB[layer],0);
+    }
+
+    for(int t_col = 0; t_col < td_x.cols; t_col++){
+        for(int x_index = 0; x_index < td_x.rows;x_index++){
+            MAT_INDEX(x,x_index,0) = MAT_INDEX(td_x,x_index,t_col);
+        }
+        for(int y_index = 0; y_index < td_y.rows;y_index++){
+            MAT_INDEX(y,y_index,0) = MAT_INDEX(td_y,y_index,t_col);
+        }
+
+        mlp_forward(mlp, x);
+
+        for(int layer = mlp.num_layers - 1; layer >= 0; layer--){
+            if(layer == mlp.num_layers - 1){
+                Matrix tmp = mat_alloc(mlp.layers[layer].output.rows, mlp.layers[layer].output.cols);
+                error[layer] = mat_alloc(y.rows, y.cols);
+                mat_diff(error[layer], y, mlp.layers[layer].output);
+                mat_mult(error[layer], error[layer], -2);
+                mat_sigmoid_f_deriv(tmp, mlp.layers[layer].output);
+                mat_mult_elem(error[layer], error[layer], tmp);
+                
+                mat_free(tmp);
+            }
+            else{
+                Matrix tmp = mat_alloc(mlp.layers[layer].output.rows, mlp.layers[layer].output.cols);
+                error[layer] = mat_alloc(error[layer+1].rows,  mlp.layers[layer+1].weights.cols);
+                mat_dot(error[layer], error[layer+1], mlp.layers[layer+1].weights);
+                mat_sigmoid_f_deriv(tmp, mlp.layers[layer].output);
+                mat_mult_elem(error[layer], error[layer], mat_transpose(tmp));
+
+                mat_free(tmp);
+            }
+        }
+
+        for(int layer = 0; layer < mlp.num_layers; layer++){
+
+            if(layer == 0){
+                Matrix tmp = mat_alloc(td_x.rows, error[layer].cols);
+                mat_dot(tmp, x, error[layer]);
+                mat_sum(dW[layer],dW[layer], mat_transpose(tmp));
+                mat_sum(dB[layer],dB[layer], mat_transpose(error[layer]));
+                mat_free(tmp);
+            }
+
+            else{
+                Matrix tmp = mat_alloc(mlp.layers[layer-1].output.rows, error[layer].cols);
+                mat_dot(tmp, mlp.layers[layer-1].output, error[layer]);
+                mat_sum(dW[layer],dW[layer], mat_transpose(tmp));
+                mat_sum(dB[layer],dB[layer], mat_transpose(error[layer]));
+                mat_free(tmp);
+            }
+        }
+    }
+    
+    for(int layer = 0; layer < mlp.num_layers;layer++){
+        mat_mult(dW[layer], dW[layer], (lr/td_x.cols));
+        mat_diff(mlp.layers[layer].weights, mlp.layers[layer].weights, dW[layer]);
+        mat_diff(mlp.layers[layer].bias, mlp.layers[layer].bias, dB[layer]); 
+    }
+
+    free(dW);
+    free(dB);
+    free(error);
+
+    mat_free(x);
+    mat_free(y);
 }
 
 MLP mlp_copy(MLP mlp){
