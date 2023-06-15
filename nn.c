@@ -27,27 +27,8 @@ int main(void){
 }   
 
     Layer layer0 = layer_alloc(2,1,SIGMOID);
-    // Layer layer1 = layer_alloc(layer0.neurons,1,SIGMOID);
     MLP mlp = mlp_alloc(1);
     mlp_add(&mlp,layer0);
-    // mlp_add(&mlp,layer1);
-
-    // mat_print(mlp_cost(mlp,td_x,td_y));
-    
-    // mat_print(mlp.layers[1].weights);
-    for(int i = 0;i < 10;i++){
-        mlp_backprop(&mlp, td_x, td_y, 0.05);
-        // mat_print(mlp_cost(mlp, td_x, td_y));
-        // mat_print(mlp.layers[1].weights);
-
-    }
-
-    // Matrix input = mat_alloc(2,1);
-    // input.vals[0] = 0;
-    // input.vals[1] = 0;
-    // mat_print(mlp_forward(&mlp,input));
-    // mat_free(input);
-    
 
     return 0;
 }

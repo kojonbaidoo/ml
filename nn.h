@@ -36,7 +36,7 @@ Layer layer_alloc(size_t num_inputs, size_t num_neurons, int activation);
 
 MLP mlp_alloc(size_t num_layers);
 void mlp_add(MLP *mlp, Layer layer);
-Matrix mlp_forward(MLP *mlp, Matrix input);
+mlp_forward(MLP *mlp, Matrix input);
 MLP mlp_copy(MLP mlp);
 
 #ifndef NN_H_
@@ -109,6 +109,21 @@ void mat_diff(Matrix mat2, Matrix mat0, Matrix mat1){
     }
 }
 
+void mat_mult(Matrix mat2, Matrix mat0, float value){
+    mat_div(mat2, mat0, (1/value));
+}
+
+void mat_mult_elem(Matrix mat2, Matrix mat0, Matrix mat1){
+    assert(mat0.rows == mat1.rows);
+    assert(mat0.cols == mat1.cols);
+
+    for(int row = 0; row < mat0.rows; row++){
+        for(int col = 0; col < mat0.cols; col++){
+            MAT_INDEX(mat2, row, col) = MAT_INDEX(mat0, row, col) * MAT_INDEX(mat1, row, col);
+        }
+    }
+
+}
 void mat_div(Matrix mat2, Matrix mat0, float value){
     assert(mat0.rows == mat2.rows);
     assert(mat0.cols == mat2.cols);
@@ -123,6 +138,7 @@ void mat_div(Matrix mat2, Matrix mat0, float value){
 void mat_print(Matrix mat){
     printf("[\n");
     for(int row = 0; row < mat.rows;row++){
+        printf("\t");
         for(int col = 0; col < mat.cols; col++){
             printf("%f ", mat.vals[(row * mat.cols) + col]);
         }
@@ -148,6 +164,18 @@ void mat_fill(Matrix mat, float value){
     }
 }
 
+Matrix mat_transpose(Matrix mat){
+    Matrix new_mat = mat_alloc(mat.cols, mat.rows);
+
+    for(int row = 0; row < mat.rows; row++){
+        for(int col = 0; col < mat.cols; col++){
+            MAT_INDEX(new_mat, col, row) = MAT_INDEX(mat,row,col);
+        }
+    }
+
+    return new_mat;
+}
+
 void mat_sigmoid_f(Matrix mat1, Matrix mat0){
     assert(mat0.rows == mat1.rows);
     assert(mat0.cols == mat1.cols);
@@ -157,6 +185,21 @@ void mat_sigmoid_f(Matrix mat1, Matrix mat0){
             MAT_INDEX(mat1,row,col) = sigmoid_f(MAT_INDEX(mat0,row,col));
         }
     }
+}
+
+void mat_sigmoid_f_deriv(Matrix mat1, Matrix mat0){
+    assert(mat0.rows == mat1.rows);
+    assert(mat0.cols == mat1.cols);
+
+    for(int row = 0; row < mat0.rows;row++){
+        for(int col = 0; col < mat0.cols; col++){
+            MAT_INDEX(mat1,row,col) = sigmoid_f_deriv(MAT_INDEX(mat0,row,col));
+        }
+    }
+}
+
+void mat_free(Matrix mat){
+    free(mat.vals);
 }
 
 Layer layer_alloc(size_t num_inputs, size_t num_neurons, int activation){
@@ -184,7 +227,7 @@ void mlp_add(MLP *mlp, Layer layer){
     mlp->num_layers = mlp->num_layers + 1;
 }
 
-Matrix mlp_forward(MLP *mlp, Matrix input){
+void mlp_forward(MLP *mlp, Matrix input){
     for(int i = 0; i < mlp->num_layers;i++){
         mat_dot(mlp->layers[i].output, mlp->layers[i].weights, input);
         mat_sum(mlp->layers[i].output, mlp->layers[i].bias, mlp->layers[i].output);
@@ -193,7 +236,6 @@ Matrix mlp_forward(MLP *mlp, Matrix input){
         }
         input = mlp->layers[i].output;
     }
-    return input;
 }
 
 Matrix mlp_cost(MLP mlp, Matrix td_input, Matrix td_output){
@@ -215,10 +257,9 @@ Matrix mlp_cost(MLP mlp, Matrix td_input, Matrix td_output){
             MAT_INDEX(out,row,1) = MAT_INDEX(td_output,row,col);
         }
 
-        y = mlp_forward(&mlp, x);
-        // mat_print(mlp.layers[0].weights);
+        mlp_forward(&mlp, x);
         
-        mat_diff(distance,out,y);
+        mat_diff(distance,out,mlp.layers[mlp.num_layers - 1].output);
         mat_dot(error,distance,distance);// I don't think this has to be matmul
         mat_sum(mse,mse,error);
     }
