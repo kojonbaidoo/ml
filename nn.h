@@ -313,7 +313,11 @@ void backpropagation(Model m, Matrix td_x, Matrix td_y, float lr){
     for(int layer = 0; layer < m.layers;layer++){
         mat_mult(dW[layer], dW[layer], (lr/td_x.cols));
         mat_diff(m.w[layer], m.w[layer], dW[layer]);
-        mat_diff(m.b[layer], m.b[layer], dB[layer]); 
+        mat_diff(m.b[layer], m.b[layer], dB[layer]);
+
+        mat_free(dW[layer]);
+        mat_free(dB[layer]);
+        mat_free(error[layer]);
     }
 
     free(dW);
