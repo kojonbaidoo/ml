@@ -56,9 +56,37 @@ void mat_free(Matrix mat);
 void layer_free(Layer layer);
 void mlp_free(MLP mlp);
 
+void save_neural_network(const char* filename, MLP* net);
+
 #define NN_H_
 
 #define MAT_INDEX(MAT,ROW,COL) MAT.vals[(ROW) * (MAT.cols) + (COL)]
+
+
+void save_neural_network(const char* filename, MLP* net) {
+    char magic[8] = "NNETV1.0";
+    FILE* file = fopen(filename, "wb");
+    if (file == NULL) {
+        printf("Could not open file for writing: %s\n", filename);
+        return;
+    }
+
+    fwrite(magic, sizeof(magic), 1, file);
+    fwrite(&net->num_layers, sizeof(net->num_layers), 1, file);
+
+    for (int i = 0; i < net->num_layers; ++i) {
+        Layer* layer = &net->layers[i];
+        fwrite(&layer->weights.cols, sizeof(layer->weights.cols), 1, file);
+        fwrite(&layer->neurons, sizeof(layer->neurons), 1, file);
+        fwrite(&layer->activation, sizeof(layer->activation), 1, file);
+        fwrite(layer->weights.vals, sizeof(float), layer->weights.cols * layer->neurons, file);
+        fwrite(layer->bias.vals, sizeof(float), layer->neurons, file);
+        
+    }
+
+    fclose(file);
+}
+
 
 
 Matrix mat_alloc(size_t rows, size_t cols){
