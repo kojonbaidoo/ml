@@ -7,7 +7,7 @@
 #define TRAINING_SAMPLE_SIZE 4
 
 float training_data[TRAINING_SAMPLE_SIZE][3] = {
-    {0,0,1},
+    {0,0,0},
     {0,1,1},
     {1,0,1},
     {1,1,0},
@@ -26,17 +26,19 @@ int main(void){
         MAT_INDEX(td_y,0,i) = training_data[i][j];
 }   
 
-    Layer layer0 = layer_alloc(2,2,SIGMOID);
-    Layer layer1 = layer_alloc(2,1,SIGMOID);
+    Layer layer0 = layer_alloc(2,16,SIGMOID);
+    Layer layer1 = layer_alloc(16,16,SIGMOID);
+    Layer layer2 = layer_alloc(16,1,SIGMOID);
 
-    MLP mlp = mlp_alloc(2);
+    MLP mlp = mlp_alloc(3);
     
     mlp_add(&mlp,layer0);
     mlp_add(&mlp,layer1);
+    mlp_add(&mlp,layer2);
 
     mat_print(mlp_cost(mlp,td_x,td_y));
-    mlp_train(mlp,td_x,td_y,0.01,100000);
-    // mat_print(mlp_cost(mlp,td_x,td_y));
+    mlp_train(mlp,td_x,td_y,1,10000);
+    mat_print(mlp_cost(mlp,td_x,td_y));
 
     return 0;
 }

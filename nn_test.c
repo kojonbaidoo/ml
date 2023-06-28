@@ -20,7 +20,10 @@ void mlp_forward_test();
 void sigmoid_f_test();
 void mat_sigmoid_f_test();
 
+void rand_float_range_test();
+
 int main(void){
+    rand_float_range_test();
     mat_alloc_test();
     mat_dot_test();
     mat_sum_test();
@@ -35,6 +38,23 @@ int main(void){
     mlp_forward_test();
 
     return 0;
+}
+
+void rand_float_range_test(){
+    float t;
+    t = rand_float_range(-0.2,0.2);
+    printf("%f\n",t - 0.2);
+    assert(t <= 0.2 && t >= -0.2);
+
+    t = rand_float_range(0,0.5);
+    assert(t <= 0.5 && t >= 0);
+
+    t = rand_float_range(-0.2,0);
+    assert(t <= 0 && t >= -0.2);
+
+    t = rand_float_range(5,1);
+    assert(t <= 1);
+    printf("Tests Passed - rand_float_range: Different ranges\n");
 }
 
 void mat_alloc_test(){
