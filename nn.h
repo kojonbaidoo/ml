@@ -342,12 +342,17 @@ void mlp_forward(MLP mlp, Matrix input){
         mat_dot(mlp.layers[i].output, mlp.layers[i].weights, input);
         mat_sum(mlp.layers[i].output, mlp.layers[i].bias, mlp.layers[i].output);
 
-        if(mlp.layers[i].activation == SIGMOID){
-            mat_sigmoid_f(mlp.layers[i].output, mlp.layers[i].output);
-        }
-        else if(mlp.layers[i].activation == RELU){
-            mat_relu_f(mlp.layers[i].output, mlp.layers[i].output);
-        }
+        switch(mlp.layers[i].activation)
+        {
+            case SIGMOID:
+                mat_sigmoid_f(mlp.layers[i].output, mlp.layers[i].output);
+                break;
+            case RELU:
+                mat_relu_f(mlp.layers[i].output, mlp.layers[i].output);
+                break;
+            default:
+                break;
+        } 
         input = mlp.layers[i].output;
     }
 }
@@ -424,9 +429,20 @@ void mlp_backprop(MLP mlp, Matrix td_x, Matrix td_y, float lr){
                 error[layer] = mat_alloc(y.rows, y.cols);
                 mat_diff(error[layer], y, mlp.layers[layer].output);
                 mat_mult(error[layer], error[layer], -2);
-                mat_sigmoid_f_deriv(tmp, mlp.layers[layer].output);
-                mat_mult_elem(error[layer], error[layer], tmp);
+
+                switch(mlp.layers[layer].activation)
+                {
+                    case SIGMOID:
+                        mat_sigmoid_f_deriv(tmp, mlp.layers[layer].output);
+                        break;
+                    case RELU:
+                        mat_relu_f_deriv(tmp, mlp.layers[layer].output);
+                        break;
+                    default:
+                        break;
+                }
                 
+                mat_mult_elem(error[layer], error[layer], tmp);
                 mat_free(tmp);
             }
             else{
@@ -437,7 +453,17 @@ void mlp_backprop(MLP mlp, Matrix td_x, Matrix td_y, float lr){
 
                 mat_dot(tmp1, mat_transpose(error[layer+1]), mlp.layers[layer+1].weights);
 
-                mat_sigmoid_f_deriv(tmp0, mlp.layers[layer].output);
+                switch (mlp.layers[layer].activation)
+                {
+                    case SIGMOID:
+                        mat_sigmoid_f_deriv(tmp0, mlp.layers[layer].output);
+                        break;
+                    case RELU:
+                        mat_relu_f_deriv(tmp0, mlp.layers[layer].output);
+                        break;
+                    default:
+                        break;
+                }
                 mat_mult_elem(error[layer], mat_transpose(tmp1), tmp0);
 
                 mat_free(tmp0);
