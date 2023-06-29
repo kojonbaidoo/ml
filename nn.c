@@ -10,7 +10,7 @@ float training_data[TRAINING_SAMPLE_SIZE][3] = {
     {0,0,0},
     {0,1,1},
     {1,0,1},
-    {1,1,0},
+    {1,1,1},
 };
 
 int main(void){
@@ -26,8 +26,8 @@ int main(void){
         MAT_INDEX(td_y,0,i) = training_data[i][j];
 }   
 
-    Layer layer0 = layer_alloc(2,16,SIGMOID);
-    Layer layer1 = layer_alloc(16,16,SIGMOID);
+    Layer layer0 = layer_alloc(2,16,RELU);
+    Layer layer1 = layer_alloc(16,16,RELU);
     Layer layer2 = layer_alloc(16,1,SIGMOID);
 
     MLP mlp = mlp_alloc(3);
@@ -37,13 +37,13 @@ int main(void){
     mlp_add(&mlp,layer2);
 
     mat_print(mlp_cost(mlp,td_x,td_y));
-    mlp_train(mlp,td_x,td_y,1,10000);
+    mlp_train(mlp,td_x,td_y,0.1,100);
     mat_print(mlp_cost(mlp,td_x,td_y));
 
-    save_neural_network("net.mat", &mlp);
+    // save_neural_network("net.mat", &mlp);
 
-    MLP *net = load_neural_network("net.mat");
-    mat_print(mlp_cost(*net, td_x, td_y));
+    // MLP *net = load_neural_network("net.mat");
+    // mat_print(mlp_cost(*net, td_x, td_y));
 
     return 0;
 }

@@ -363,8 +363,6 @@ Matrix mlp_cost(MLP mlp, Matrix td_input, Matrix td_output){
     Matrix mse = mat_alloc(td_output.rows,1);
     
     mat_fill(mse,0);
-    // mat_fill(distance,0);
-    // mat_fill(error,0);
 
     Matrix x = mat_alloc(td_input.rows, 1);
     Matrix out = mat_alloc(td_output.rows,1);
@@ -395,6 +393,7 @@ Matrix mlp_cost(MLP mlp, Matrix td_input, Matrix td_output){
 void mlp_train(MLP m, Matrix td_x, Matrix td_y, float lr, size_t epochs){
     for(int epoch = 0; epoch < epochs; epoch++){
         mlp_backprop(m,td_x,td_y,lr);
+        // mat_print(mlp_cost(m, td_x, td_y));
     }
 }
 
@@ -441,7 +440,7 @@ void mlp_backprop(MLP mlp, Matrix td_x, Matrix td_y, float lr){
                     default:
                         break;
                 }
-                
+
                 mat_mult_elem(error[layer], error[layer], tmp);
                 mat_free(tmp);
             }
@@ -478,6 +477,7 @@ void mlp_backprop(MLP mlp, Matrix td_x, Matrix td_y, float lr){
                 mat_dot(tmp, error[layer], mat_transpose(x));
                 mat_sum(dW[layer],dW[layer], tmp);
                 mat_sum(dB[layer],dB[layer], error[layer]);
+                
                 mat_free(tmp);
             }
 
@@ -539,7 +539,14 @@ float sigmoid_f_deriv(float value){
 }
 
 float relu_f(float value){
-    return (value >= 0) * value;
+    switch(value >= 0)
+    {
+        case 1:
+            return value;
+        
+        default:
+            return 0;
+    }
 }
 
 float relu_f_deriv(float value){
