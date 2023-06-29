@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <time.h>
 #include <math.h>
+#include <string.h>
 
 #define SIGMOID 0
 #define RELU 1
@@ -82,12 +83,57 @@ void save_neural_network(const char* filename, MLP* net) {
         fwrite(layer->weights.vals, sizeof(float), layer->weights.cols * layer->neurons, file);
         fwrite(layer->bias.vals, sizeof(float), layer->neurons, file);
         
+        // printf("%ld\n",layer->neurons);
     }
 
     fclose(file);
 }
 
+MLP* load_neural_network(const char* filename) {
+    FILE* file = fopen(filename, "rb");
+    if (file == NULL) {
+        printf("Could not open file for reading: %s\n", filename);
+        return NULL;
+    }
 
+    char magic[8];
+    fread(magic, sizeof(magic), 1, file);
+    if (strcmp(magic, "NNETV1.0") != 0) {
+        printf("Invalid magic string: %s\n", magic);
+        return NULL;
+    }
+
+    size_t num_layers;
+    size_t num_inputs;
+    size_t num_neurons;
+    int activation;
+
+    fread(&num_layers, sizeof(num_layers), 1, file);
+    MLP* net = malloc(sizeof(MLP));
+    net->layers = malloc(sizeof(Layer) * num_layers);
+    net->num_layers = num_layers;
+    net->max_num_layers = num_layers;
+
+    for (int i = 0; i < net->num_layers; ++i) {
+        Layer* layer = &net->layers[i];
+        fread(&num_inputs, sizeof(num_inputs), 1, file);
+        fread(&num_neurons, sizeof(num_neurons), 1, file);
+        fread(&activation, sizeof(activation), 1, file);
+
+        layer->weights = mat_alloc(num_neurons, num_inputs);
+        layer->bias = mat_alloc(num_neurons, 1);
+        layer->output = mat_alloc(num_neurons, 1);
+        layer->activation = activation;
+        layer->neurons = num_neurons;
+
+        fread(layer->weights.vals, sizeof(float), layer->weights.cols * layer->neurons, file);
+        fread(layer->bias.vals, sizeof(float), layer->neurons, file);
+    }
+
+    fclose(file);
+
+    return net;
+}
 
 Matrix mat_alloc(size_t rows, size_t cols){
     float *vals = malloc(rows * cols * sizeof(float));
