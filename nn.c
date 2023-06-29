@@ -41,7 +41,7 @@ int main(void){
     mat_print(mlp_cost(mlp,td_x,td_y));
 
     save_neural_network("net.mat", &mlp);
-    
+
     MLP *net = load_neural_network("net.mat");
     mat_print(mlp_cost(*net, td_x, td_y));
 

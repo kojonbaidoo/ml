@@ -32,6 +32,8 @@ typedef struct{
 float rand_float();
 float sigmoid_f(float value);
 float sigmoid_f_deriv(float value);
+float relu_f(float value);
+float relu_f_deriv(float value);
 
 Layer layer_alloc(size_t num_inputs, size_t num_neurons, int activation);
 
@@ -58,6 +60,7 @@ void layer_free(Layer layer);
 void mlp_free(MLP mlp);
 
 void save_neural_network(const char* filename, MLP* net);
+MLP* load_neural_network(const char* filename);
 
 #define NN_H_
 
@@ -283,6 +286,28 @@ void mat_sigmoid_f_deriv(Matrix mat1, Matrix mat0){
     }
 }
 
+void mat_relu_f(Matrix mat1, Matrix mat0){
+    assert(mat0.rows == mat1.rows);
+    assert(mat0.cols == mat1.cols);
+
+    for(int row = 0; row < mat0.rows;row++){
+        for(int col = 0; col < mat0.cols; col++){
+            MAT_INDEX(mat1,row,col) = relu_f(MAT_INDEX(mat0,row,col));
+        }
+    }
+}
+
+void mat_relu_f_deriv(Matrix mat1, Matrix mat0){
+    assert(mat0.rows == mat1.rows);
+    assert(mat0.cols == mat1.cols);
+
+    for(int row = 0; row < mat0.rows;row++){
+        for(int col = 0; col < mat0.cols; col++){
+            MAT_INDEX(mat1,row,col) = relu_f_deriv(MAT_INDEX(mat0,row,col));
+        }
+    }
+}
+
 Layer layer_alloc(size_t num_inputs, size_t num_neurons, int activation){
     Layer layer;
     layer.neurons = num_neurons;
@@ -316,8 +341,12 @@ void mlp_forward(MLP mlp, Matrix input){
     for(int i = 0; i < mlp.num_layers;i++){
         mat_dot(mlp.layers[i].output, mlp.layers[i].weights, input);
         mat_sum(mlp.layers[i].output, mlp.layers[i].bias, mlp.layers[i].output);
+
         if(mlp.layers[i].activation == SIGMOID){
             mat_sigmoid_f(mlp.layers[i].output, mlp.layers[i].output);
+        }
+        else if(mlp.layers[i].activation == RELU){
+            mat_relu_f(mlp.layers[i].output, mlp.layers[i].output);
         }
         input = mlp.layers[i].output;
     }
@@ -483,12 +512,20 @@ float sigmoid_f_deriv(float value){
     return sigmoid_f(value) * (1 - sigmoid_f(value));
 }
 
+float relu_f(float value){
+    return (value >= 0) * value;
+}
+
+float relu_f_deriv(float value){
+    return (value > 0);
+}
+
 float rand_float(){
     return (float) rand() / (RAND_MAX);
 }
 
 float rand_float_range(float lower, float upper){
-    return (float) ((rand() / (RAND_MAX)) * (upper + lower)) - lower ;
+    return (float) ((rand() / (RAND_MAX)) * (upper - lower)) + lower ;
 }
 #endif // NN_H_
 

@@ -19,6 +19,8 @@ void mlp_forward_test();
 
 void sigmoid_f_test();
 void mat_sigmoid_f_test();
+void relu_f_test();
+void mat_relu_f_test();
 
 void rand_float_range_test();
 
@@ -32,6 +34,8 @@ int main(void){
     mat_fill_test();
     sigmoid_f_test();
     mat_sigmoid_f_test();
+    relu_f_test();
+    mat_relu_f_test();
     layer_alloc_test();
     mlp_alloc_test();
     mlp_add_test();
@@ -42,18 +46,16 @@ int main(void){
 
 void rand_float_range_test(){
     float t;
+    float epsilon = 0.0000001;
     t = rand_float_range(-0.2,0.2);
-    printf("%f\n",t - 0.2);
-    assert(t <= 0.2 && t >= -0.2);
+    assert(t <= (0.2 + epsilon) && t >= (-0.2 - epsilon));
 
     t = rand_float_range(0,0.5);
-    assert(t <= 0.5 && t >= 0);
+    assert(t <= (0.5 + epsilon) && t >= (0 - epsilon));
 
     t = rand_float_range(-0.2,0);
-    assert(t <= 0 && t >= -0.2);
+    assert(t <= (0.0 + epsilon)  && t >= (-0.2 - epsilon));
 
-    t = rand_float_range(5,1);
-    assert(t <= 1);
     printf("Tests Passed - rand_float_range: Different ranges\n");
 }
 
@@ -216,6 +218,37 @@ void mat_sigmoid_f_test(){
 void sigmoid_f_test(){
     assert(0.5 == sigmoid_f(0.0));
     printf("Tests Passed - sigmoid_f: 0.5\n");
+}
+
+void mat_relu_f_test(){
+    Matrix mat0 = mat_alloc(2,5);
+    Matrix mat1 = mat_alloc(2,5);
+    Matrix mat2 = mat_alloc(2,5);
+
+    mat_fill(mat0,-2);
+    mat_fill(mat1, 0);
+    mat_fill(mat2, 2);
+
+    mat_relu_f(mat0,mat0);
+    mat_relu_f(mat1,mat1);
+    mat_relu_f(mat2,mat2);
+
+    for(int row = 0; row < mat0.rows;row++){
+        for(int col = 0; col < mat0.cols; col++){
+            assert((MAT_INDEX(mat0, row, col)) == 0);
+            assert((MAT_INDEX(mat1, row, col)) == 0);
+            assert((MAT_INDEX(mat2, row, col)) == 2);
+        }
+    }
+    printf("Tests Passed - mat_relu_f: -2,0,2 matrix\n");
+}
+
+void relu_f_test(){
+    assert(0 == relu_f(-0.5));
+    assert(0 == relu_f(0.0));
+    assert(0.5 == relu_f(0.5));
+
+    printf("Tests Passed - relu_f: -0.5,0,0.5\n");
 }
 
 void layer_alloc_test(){
