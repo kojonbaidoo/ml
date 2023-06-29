@@ -404,9 +404,6 @@ void mlp_backprop(MLP mlp, Matrix td_x, Matrix td_y, float lr){
                 Matrix tmp0 = mat_alloc(mlp.layers[layer].output.rows, mlp.layers[layer].output.cols);
                 Matrix tmp1 = mat_alloc(mlp.layers[layer].output.cols, mlp.layers[layer].output.rows);
 
-                // error[layer] = mat_alloc(error[layer+1].rows,  mlp.layers[layer+1].weights.cols);
-                // mat_dot(error[layer], error[layer+1], mlp.layers[layer+1].weights);
-
                 error[layer] = mat_alloc(mlp.layers[layer].output.rows, mlp.layers[layer].output.cols);
 
                 mat_dot(tmp1, mat_transpose(error[layer+1]), mlp.layers[layer+1].weights);
