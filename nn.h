@@ -4,6 +4,7 @@
 #include <time.h>
 #include <math.h>
 #include <string.h>
+#include <pthread.h>
 
 #define SIGMOID 0
 #define RELU 1
@@ -28,6 +29,14 @@ typedef struct{
     size_t num_layers;
     size_t max_num_layers;
 } MLP;
+
+typedef struct{
+    Matrix *mat3;
+    Matrix *mat1;
+    Matrix *mat2;
+    int row;
+    int col;
+} Dot_Package;
 
 float rand_float();
 float sigmoid_f(float value);
@@ -62,9 +71,12 @@ void mlp_free(MLP mlp);
 void save_neural_network(const char* filename, MLP* net);
 MLP* load_neural_network(const char* filename);
 
+void mat_dot_multithreaded(Matrix mat3, Matrix mat1, Matrix mat2);
+void *mat_dot_multithreaded_unit(void * myargs);
+
 #define NN_H_
 
-#define MAT_INDEX(MAT,ROW,COL) MAT.vals[(ROW) * (MAT.cols) + (COL)]
+#define MAT_INDEX(MAT,ROW,COL) (MAT).vals[(ROW) * ((MAT).cols) + (COL)]
 
 
 void save_neural_network(const char* filename, MLP* net) {
@@ -159,6 +171,48 @@ void mat_dot(Matrix mat3, Matrix mat1, Matrix mat2){
                 MAT_INDEX(mat3,row,col) = MAT_INDEX(mat3,row,col) + MAT_INDEX(mat1,row,m1_col) * MAT_INDEX(mat2,m1_col,col);
             }
         }
+    }
+}
+
+void mat_dot_multithreaded(Matrix mat3, Matrix mat1, Matrix mat2){
+    assert(mat1.cols == mat2.rows);
+    assert(mat3.rows == mat1.rows);
+    assert(mat3.cols == mat2.cols);
+
+    mat_fill(mat3,0);
+    pthread_t *thread_id = malloc(sizeof(pthread_t) * (mat3.rows * mat3.cols));
+    Dot_Package *dp = malloc(sizeof(Dot_Package) * (mat3.rows * mat3.cols));
+
+    for(int row = 0; row < mat3.rows;row++){
+        for(int col = 0;col < mat3.cols;col++){
+            
+            dp[(row * mat3.cols) + col].mat1 = &mat1;
+            dp[(row * mat3.cols) + col].mat2 = &mat2;
+            dp[(row * mat3.cols) + col].mat3 = &mat3;
+            dp[(row * mat3.cols) + col].row = row;
+            dp[(row * mat3.cols) + col].col = col;
+
+            pthread_create(&thread_id[(row * mat3.cols) + col], NULL, mat_dot_multithreaded_unit, &(dp[(row * mat3.cols) + col])); 
+        }
+    }
+
+    for(int row = 0; row < mat3.rows;row++){
+        for(int col = 0;col < mat3.cols;col++){
+            pthread_join(thread_id[(row * mat3.cols) + col], NULL);
+        }
+    }
+
+    free(dp);
+    free(thread_id);
+}
+
+void *mat_dot_multithreaded_unit(void *myargs){
+    Dot_Package *dp = (Dot_Package *) myargs;
+    int row = dp->row;
+    int col = dp->col;
+    printf("[%d %d]\n",dp->row,dp->col);
+    for(int m1_col = 0; m1_col < (dp->mat1)->cols;m1_col++){
+        MAT_INDEX(*(dp->mat3),row,col) = MAT_INDEX(*(dp->mat3),row,col) + MAT_INDEX(*(dp->mat1),row,m1_col) * MAT_INDEX(*(dp->mat2),m1_col,col);
     }
 }
 

@@ -2,7 +2,7 @@
 #include "nn.h"
 #include <assert.h>
 
-#define MAT_INDEX(MAT,ROW,COL) MAT.vals[(ROW) * (MAT.cols) + (COL)]
+// #define MAT_INDEX(MAT,ROW,COL) MAT.vals[(ROW) * (MAT.cols) + (COL)]
 
 void mat_dot_test();
 void mat_sum_test();
@@ -24,10 +24,13 @@ void mat_relu_f_test();
 
 void rand_float_range_test();
 
+void mat_dot_multithreaded_test();
+
 int main(void){
     rand_float_range_test();
     mat_alloc_test();
     mat_dot_test();
+    mat_dot_multithreaded_test();
     mat_sum_test();
     mat_diff_test();
     mat_div_test();
@@ -100,7 +103,41 @@ void mat_dot_test(){
             assert(MAT_INDEX(mat0,row,col) == MAT_INDEX(mat2, row,col));
         }
     }
+
+    mat_print(mat2);
     printf("Tests Passed - mat_dot: Identity Matrix\n");
+    free(mat0.vals);
+    free(mat1.vals);
+    free(mat2.vals);
+}
+
+void mat_dot_multithreaded_test(){
+    Matrix mat0 = mat_alloc(2,2);
+    mat0.vals[0] = 1.0;
+    mat0.vals[1] = 2.0;
+    mat0.vals[2] = 3.0;
+    mat0.vals[3] = 4.0;
+
+    Matrix mat1 = mat_alloc(2,2);
+    mat1.vals[0] = 1.0;
+    mat1.vals[1] = 0.0;
+    mat1.vals[2] = 0.0;
+    mat1.vals[3] = 1.0;
+
+    Matrix mat2;
+    mat2.rows = mat0.rows;
+    mat2.cols = mat1.cols;
+    mat2.vals = malloc(mat2.rows * mat2.cols * sizeof(float));
+    
+    mat_dot_multithreaded(mat2, mat0, mat1);
+    mat_print(mat2);
+
+    for(int row = 0; row < mat2.rows;row++){
+        for(int col = 0; col < mat2.cols; col++){
+            assert(MAT_INDEX(mat0,row,col) == MAT_INDEX(mat2, row,col));
+        }
+    }
+    printf("Tests Passed - mat_dot_multithreaded: Identity Matrix\n");
     free(mat0.vals);
     free(mat1.vals);
     free(mat2.vals);
