@@ -104,7 +104,6 @@ void mat_dot_test(){
         }
     }
 
-    mat_print(mat2);
     printf("Tests Passed - mat_dot: Identity Matrix\n");
     free(mat0.vals);
     free(mat1.vals);
@@ -130,7 +129,6 @@ void mat_dot_multithreaded_test(){
     mat2.vals = malloc(mat2.rows * mat2.cols * sizeof(float));
     
     mat_dot_multithreaded(mat2, mat0, mat1);
-    mat_print(mat2);
 
     for(int row = 0; row < mat2.rows;row++){
         for(int col = 0; col < mat2.cols; col++){

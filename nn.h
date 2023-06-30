@@ -97,8 +97,7 @@ void save_neural_network(const char* filename, MLP* net) {
         fwrite(&layer->activation, sizeof(layer->activation), 1, file);
         fwrite(layer->weights.vals, sizeof(float), layer->weights.cols * layer->neurons, file);
         fwrite(layer->bias.vals, sizeof(float), layer->neurons, file);
-        
-        // printf("%ld\n",layer->neurons);
+
     }
 
     fclose(file);
@@ -210,7 +209,6 @@ void *mat_dot_multithreaded_unit(void *myargs){
     Dot_Package *dp = (Dot_Package *) myargs;
     int row = dp->row;
     int col = dp->col;
-    printf("[%d %d]\n",dp->row,dp->col);
     for(int m1_col = 0; m1_col < (dp->mat1)->cols;m1_col++){
         MAT_INDEX(*(dp->mat3),row,col) = MAT_INDEX(*(dp->mat3),row,col) + MAT_INDEX(*(dp->mat1),row,m1_col) * MAT_INDEX(*(dp->mat2),m1_col,col);
     }
