@@ -2,7 +2,7 @@
 #include "nn.h"
 #include <assert.h>
 
-#define MAT_INDEX(MAT,ROW,COL) MAT.vals[(ROW) * (MAT.cols) + (COL)]
+// #define MAT_INDEX(MAT,ROW,COL) MAT.vals[(ROW) * (MAT.cols) + (COL)]
 #define EPOCHS 1
 #define TRAINING_SAMPLE_SIZE 4
 

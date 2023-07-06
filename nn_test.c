@@ -6,6 +6,7 @@
 
 void mat_dot_test();
 void mat_sum_test();
+void mat_copy_test();
 void mat_diff_test();
 void mat_div_test();
 void mat_alloc_test();
@@ -32,6 +33,7 @@ int main(void){
     mat_dot_test();
     mat_dot_multithreaded_test();
     mat_sum_test();
+    mat_copy_test();
     mat_diff_test();
     mat_div_test();
     mat_fill_test();
@@ -161,6 +163,22 @@ void mat_sum_test(){
         }
     }
     printf("Tests Passed - mat_sum: Same Matrix\n");
+}
+
+void mat_copy_test(){
+    Matrix mat0 = mat_alloc(2,2);
+    Matrix mat2 = mat_alloc(2,2);
+    mat_fill(mat0,1);
+    mat_fill(mat2,0);
+
+    mat_copy(mat2, mat0);
+    
+    for(int row = 0; row < mat2.rows;row++){
+        for(int col = 0; col < mat2.cols; col++){
+            assert(1 == MAT_INDEX(mat2, row,col));
+        }
+    }
+    printf("Tests Passed - mat_copy: Matrix\n");
 }
 
 void mat_diff_test(){

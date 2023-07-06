@@ -57,6 +57,7 @@ MLP mlp_copy(MLP mlp);
 Matrix mat_alloc(size_t rows, size_t cols);
 void mat_dot(Matrix mat3, Matrix mat1, Matrix mat2);
 void mat_sum(Matrix mat2, Matrix mat1, Matrix mat0);
+void mat_copy(Matrix mat1, Matrix mat0);
 void mat_diff(Matrix mat2, Matrix mat0, Matrix mat1);
 void mat_div(Matrix mat2, Matrix mat0, float value);
 void mat_print(Matrix mat);
@@ -158,6 +159,16 @@ Matrix mat_alloc(size_t rows, size_t cols){
     return mat;
 }
 
+void mat_copy(Matrix dst, Matrix src){
+    assert(dst.rows == src.rows);
+    assert(dst.cols == src.cols);
+
+    for(int row = 0;row < dst.rows; row++){
+        for(int col = 0;col < dst.cols; col++){
+            MAT_INDEX(dst,row,col) = MAT_INDEX(src,row,col);
+        }
+    }
+}
 void mat_dot(Matrix mat3, Matrix mat1, Matrix mat2){
     assert(mat1.cols == mat2.rows);
     assert(mat3.rows == mat1.rows);
