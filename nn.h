@@ -238,6 +238,17 @@ void mat_sum(Matrix mat2, Matrix mat1, Matrix mat0 ){
     }
 }
 
+float mat_sum_elem(Matrix mat0){
+    float sum = 0;
+    for(int row = 0; row < mat0.rows;row++){
+        for(int col = 0; col < mat0.cols; col++){
+            sum = sum + MAT_INDEX(mat0,row,col);
+        }
+    }
+
+    return sum;
+}
+
 void mat_diff(Matrix mat2, Matrix mat0, Matrix mat1){
     assert(mat0.rows == mat1.rows);
     assert(mat0.cols == mat1.cols);

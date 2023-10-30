@@ -391,3 +391,55 @@ void mlp_forward_test(){
     printf("Tests Passed - mlp_forward\n");
 }
 
+void convolution_test(){
+    Matrix mat0 = mat_alloc(5,5);
+    Matrix kernel = mat_alloc(3,3);
+    Matrix result = mat_alloc(mat0.rows - kernel.rows + 1, mat0.cols - kernel.cols + 1);
+
+    mat_fill(mat0,0);
+    mat_fill(kernel,0);
+    mat_fill(result,0);
+
+    MAT_INDEX(mat0,0,0) = 1;
+    MAT_INDEX(mat0,0,1) = 1;
+    MAT_INDEX(mat0,0,2) = 1;
+    
+    MAT_INDEX(mat0,1,1) = 1;
+    MAT_INDEX(mat0,1,2) = 1;
+    MAT_INDEX(mat0,1,3) = 1;
+
+    MAT_INDEX(mat0,2,2) = 1;
+    MAT_INDEX(mat0,2,3) = 1;
+    MAT_INDEX(mat0,2,4) = 1;
+
+    MAT_INDEX(mat0,3,2) = 1;
+    MAT_INDEX(mat0,3,3) = 1;
+
+    MAT_INDEX(mat0,4,1) = 1;
+    MAT_INDEX(mat0,4,2) = 1;
+    
+
+    MAT_INDEX(kernel,0,0) = 1;
+    MAT_INDEX(kernel,0,2) = 1;
+
+    MAT_INDEX(kernel,1,1) = 1;
+    
+    MAT_INDEX(kernel,2,0) = 1;
+    MAT_INDEX(kernel,2,2) = 1;
+
+    convolution(mat0, kernel, result);
+
+    assert(MAT_INDEX(result,0,0) == 4);
+    assert(MAT_INDEX(result,0,0) == 3);
+    assert(MAT_INDEX(result,0,0) == 4);
+
+    assert(MAT_INDEX(result,0,0) == 2);
+    assert(MAT_INDEX(result,0,0) == 4);
+    assert(MAT_INDEX(result,0,0) == 3);
+    
+    assert(MAT_INDEX(result,0,0) == 2);
+    assert(MAT_INDEX(result,0,0) == 3);
+    assert(MAT_INDEX(result,0,0) == 4);
+
+    printf("Tests Passed - Convolution\n");
+}
