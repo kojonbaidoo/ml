@@ -267,8 +267,8 @@ void mat_mult(Matrix mat2, Matrix mat0, float value){
 }
 
 void mat_mult_elem_offset(Matrix mat2, Matrix mat0, Matrix mat1, int row_offset, int col_offset){
-    for(int row = 0; row < mat0.rows; row++){
-        for(int col = 0; col < mat0.cols; col++){
+    for(int row = 0; row < mat1.rows; row++){
+        for(int col = 0; col < mat1.cols; col++){
             MAT_INDEX(mat2, row, col) = MAT_INDEX(mat0, row+row_offset, col+col_offset) * MAT_INDEX(mat1, row, col);
         }
     }
@@ -294,7 +294,18 @@ void mat_div(Matrix mat2, Matrix mat0, float value){
 }
 
 void convolution(Matrix result, Matrix mat0, Matrix kernel){
+    int max_row_offset = mat0.rows - kernel.rows + 1;
+    int max_col_offset = mat0.cols - kernel.cols + 1;
 
+    Matrix intermediate = mat_alloc(kernel.rows, kernel.cols);
+
+    for(int row_offset = 0; row_offset < max_row_offset; row_offset++ ){
+        for(int col_offset = 0; col_offset < max_col_offset; col_offset++){
+            mat_mult_elem_offset(intermediate, mat0, kernel, row_offset, col_offset);
+            MAT_INDEX(result, row_offset, col_offset) = mat_sum_elem(intermediate);   
+        }
+    }
+    mat_free(intermediate);
 }
 
 void mat_print(Matrix mat){

@@ -38,13 +38,13 @@ int main(void){
     // mat_dot_test();
     // mat_dot_multithreaded_test();
     // mat_sum_test();
-    mat_sum_elem_test();
+    // mat_sum_elem_test();
     // mat_copy_test();
     // mat_diff_test();
     // mat_div_test();
     // mat_fill_test();
-    mat_mult_elem_test();
-    mat_mult_elem_offset_test();
+    // mat_mult_elem_test();
+    // mat_mult_elem_offset_test();
     // sigmoid_f_test();
     // mat_sigmoid_f_test();
     // relu_f_test();
@@ -53,7 +53,7 @@ int main(void){
     // mlp_alloc_test();
     // mlp_add_test();
     // mlp_forward_test();
-    // convolution_test();
+    convolution_test();
     return 0;
 }
 
@@ -85,6 +85,9 @@ void mat_alloc_test(){
     assert(mat2.rows == 20);
     assert(mat2.cols == 11);
 
+    mat_free(mat0);
+    mat_free(mat1);
+    mat_free(mat2);
     printf("Tests Passed - mat_alloc: Random Matrix\n");
 }
 
@@ -170,6 +173,9 @@ void mat_sum_test(){
             assert((2 * MAT_INDEX(mat0, row, col)) == MAT_INDEX(mat2, row,col));
         }
     }
+
+    mat_free(mat0);
+    mat_free(mat2);
     printf("Tests Passed - mat_sum: Same Matrix\n");
 }
 
@@ -184,6 +190,8 @@ void mat_sum_elem_test(){
     
     assert(10.0 == result);
     
+    mat_free(mat0);
+
     printf("Tests Passed - Sum all elements of a Matrix\n");
 }
 
@@ -200,6 +208,10 @@ void mat_copy_test(){
             assert(1 == MAT_INDEX(mat2, row,col));
         }
     }
+
+    mat_free(mat0);
+    mat_free(mat2);
+
     printf("Tests Passed - mat_copy: Matrix\n");
 }
 
@@ -222,6 +234,9 @@ void mat_diff_test(){
             assert(0 == MAT_INDEX(mat2, row,col));
         }
     }
+
+    mat_free(mat0);
+    mat_free(mat2);
     printf("Tests Passed - mat_diff: Same Matrix\n");
 }
 
@@ -244,6 +259,9 @@ void mat_div_test(){
             assert((MAT_INDEX(mat0,row,col)/2) == MAT_INDEX(mat2, row,col));
         }
     }
+
+    mat_free(mat0);
+    mat_free(mat2);
     printf("Tests Passed - mat_div: Matrix - (Matrix / 2)\n");
 }
 
@@ -264,6 +282,8 @@ void mat_fill_test(){
         }
     }
 
+    mat_free(mat0);
+    mat_free(mat1);
     printf("Tests Passed - mat_fill: Random numbers\n");
 }
 
@@ -285,6 +305,9 @@ void mat_mult_elem_test(){
         assert(mat0.vals[i] *2 == result.vals[i]);
     }
 
+    mat_free(mat0);
+    mat_free(mat1);
+    mat_free(result);
     printf("Tests Passed - Element wise matrix multiplication\n");
 }
 
@@ -309,6 +332,9 @@ void mat_mult_elem_offset_test(){
     else{ assert(mat0.vals[i] == 0);}
     }
 
+    mat_free(mat0);
+    mat_free(mat1);
+    mat_free(result);
     printf("Tests Passed - Element wise matrix multiplication with offset\n");
 }
 
@@ -332,6 +358,8 @@ void mat_sigmoid_f_test(){
         }
     }
 
+    mat_free(mat0);
+    mat_free(mat1);
     printf("Tests Passed - mat_sigmoid_f: 0 matrix\n");
 }
 
@@ -360,6 +388,10 @@ void mat_relu_f_test(){
             assert((MAT_INDEX(mat2, row, col)) == 2);
         }
     }
+
+    mat_free(mat0);
+    mat_free(mat1);
+    mat_free(mat2);
     printf("Tests Passed - mat_relu_f: -2,0,2 matrix\n");
 }
 
@@ -392,6 +424,8 @@ void layer_alloc_test(){
     assert(layer1.neurons == 23);
     assert(layer1.activation == SIGMOID);
 
+    layer_free(layer0);
+    layer_free(layer1);
     printf("Tests Passed - Layer: 2\n");
 }
 
@@ -400,6 +434,7 @@ void mlp_alloc_test(){
     assert(mlp0.num_layers == 0);
     assert(mlp0.max_num_layers == 10);
 
+    mlp_free(mlp0);
     printf("Tests Passed - mlp_alloc\n");
 }
 
@@ -432,6 +467,10 @@ void mlp_add_test(){
     assert(layer1.neurons == mlp.layers[1].neurons);
     assert(layer1.activation == mlp.layers[1].activation);
 
+    layer_free(layer0);
+    layer_free(layer1);
+
+    mlp_free(mlp);
     printf("Tests Passed - MLP creation\n");
 }
 
@@ -455,6 +494,12 @@ void mlp_forward_test(){
     
     assert(MAT_INDEX(mlp.layers[mlp.num_layers - 1].output,0,0) == 0.5);
 
+    mat_free(input);
+
+    layer_free(layer0);
+    layer_free(layer1);
+
+    mlp_free(mlp);
     printf("Tests Passed - mlp_forward\n");
 }
 
@@ -494,19 +539,19 @@ void convolution_test(){
     MAT_INDEX(kernel,2,0) = 1;
     MAT_INDEX(kernel,2,2) = 1;
 
-    convolution(mat0, kernel, result);
-
-    assert(MAT_INDEX(result,0,0) == 4);
-    assert(MAT_INDEX(result,0,0) == 3);
-    assert(MAT_INDEX(result,0,0) == 4);
-
-    assert(MAT_INDEX(result,0,0) == 2);
-    assert(MAT_INDEX(result,0,0) == 4);
-    assert(MAT_INDEX(result,0,0) == 3);
+    convolution(result, mat0, kernel);
     
-    assert(MAT_INDEX(result,0,0) == 2);
-    assert(MAT_INDEX(result,0,0) == 3);
     assert(MAT_INDEX(result,0,0) == 4);
+    assert(MAT_INDEX(result,0,1) == 3);
+    assert(MAT_INDEX(result,0,2) == 4);
+
+    assert(MAT_INDEX(result,1,0) == 2);
+    assert(MAT_INDEX(result,1,1) == 4);
+    assert(MAT_INDEX(result,1,2) == 3);
+    
+    assert(MAT_INDEX(result,2,0) == 2);
+    assert(MAT_INDEX(result,2,1) == 3);
+    assert(MAT_INDEX(result,2,2) == 4);
 
     printf("Tests Passed - Convolution\n");
 }
