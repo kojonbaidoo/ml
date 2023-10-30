@@ -255,6 +255,15 @@ void mat_mult(Matrix mat2, Matrix mat0, float value){
     mat_div(mat2, mat0, (1/value));
 }
 
+void mat_mult_elem_offset(Matrix mat2, Matrix mat0, Matrix mat1, int row_offset, int col_offset){
+    for(int row = 0; row < mat0.rows; row++){
+        for(int col = 0; col < mat0.cols; col++){
+            MAT_INDEX(mat2, row, col) = MAT_INDEX(mat0, row+row_offset, col+col_offset) * MAT_INDEX(mat1, row, col);
+        }
+    }
+
+}
+
 void mat_mult_elem(Matrix mat2, Matrix mat0, Matrix mat1){
     assert(mat0.rows == mat1.rows);
     assert(mat0.cols == mat1.cols);
