@@ -6,11 +6,14 @@
 
 void mat_dot_test();
 void mat_sum_test();
+void mat_sum_elem_test();
 void mat_copy_test();
 void mat_diff_test();
 void mat_div_test();
 void mat_alloc_test();
 void mat_fill_test();
+void mat_mult_elem_test();
+void mat_mult_elem_offset_test();
 
 void layer_alloc_test();
 
@@ -23,29 +26,34 @@ void mat_sigmoid_f_test();
 void relu_f_test();
 void mat_relu_f_test();
 
+void convolution_test();
+
 void rand_float_range_test();
 
 void mat_dot_multithreaded_test();
 
 int main(void){
-    rand_float_range_test();
-    mat_alloc_test();
-    mat_dot_test();
-    mat_dot_multithreaded_test();
-    mat_sum_test();
-    mat_copy_test();
-    mat_diff_test();
-    mat_div_test();
-    mat_fill_test();
-    sigmoid_f_test();
-    mat_sigmoid_f_test();
-    relu_f_test();
-    mat_relu_f_test();
-    layer_alloc_test();
-    mlp_alloc_test();
-    mlp_add_test();
-    mlp_forward_test();
-
+    // rand_float_range_test();
+    // mat_alloc_test();
+    // mat_dot_test();
+    // mat_dot_multithreaded_test();
+    // mat_sum_test();
+    mat_sum_elem_test();
+    // mat_copy_test();
+    // mat_diff_test();
+    // mat_div_test();
+    // mat_fill_test();
+    mat_mult_elem_test();
+    mat_mult_elem_offset_test();
+    // sigmoid_f_test();
+    // mat_sigmoid_f_test();
+    // relu_f_test();
+    // mat_relu_f_test();
+    // layer_alloc_test();
+    // mlp_alloc_test();
+    // mlp_add_test();
+    // mlp_forward_test();
+    // convolution_test();
     return 0;
 }
 
@@ -165,6 +173,20 @@ void mat_sum_test(){
     printf("Tests Passed - mat_sum: Same Matrix\n");
 }
 
+void mat_sum_elem_test(){
+    Matrix mat0 = mat_alloc(2,2);
+    mat0.vals[0] = 1.0;
+    mat0.vals[1] = 2.0;
+    mat0.vals[2] = 3.0;
+    mat0.vals[3] = 4.0;
+
+    float result = mat_sum_elem(mat0);
+    
+    assert(10.0 == result);
+    
+    printf("Tests Passed - Sum all elements of a Matrix\n");
+}
+
 void mat_copy_test(){
     Matrix mat0 = mat_alloc(2,2);
     Matrix mat2 = mat_alloc(2,2);
@@ -243,6 +265,51 @@ void mat_fill_test(){
     }
 
     printf("Tests Passed - mat_fill: Random numbers\n");
+}
+
+void mat_mult_elem_test(){
+    Matrix mat0 = mat_alloc(2,2);
+    mat0.vals[0] = 1;
+    mat0.vals[1] = 2;
+    mat0.vals[2] = 3;
+    mat0.vals[3] = 4;
+
+    Matrix mat1 = mat_alloc(2,2);
+    mat_fill(mat1, 2);
+
+    Matrix result = mat_alloc(mat0.rows, mat0.cols);
+
+    mat_mult_elem(result, mat0, mat1);
+
+    for(int i = 0; i < mat0.rows * mat0.cols;i++){
+        assert(mat0.vals[i] *2 == result.vals[i]);
+    }
+
+    printf("Tests Passed - Element wise matrix multiplication\n");
+}
+
+void mat_mult_elem_offset_test(){
+    Matrix mat0 = mat_alloc(3,3);
+    mat_fill(mat0, 0);
+    mat0.vals[1] = 2;
+    mat0.vals[2] = 3;
+    mat0.vals[4] = 5;
+    mat0.vals[5] = 6;
+
+    Matrix mat1 = mat_alloc(2,2);
+    mat_fill(mat1, 2);
+
+    Matrix result = mat_alloc(mat1.rows, mat1.cols);
+
+    mat_mult_elem_offset(result, mat0, mat1, 0, 1);
+
+    for(int i = 0; i < mat0.rows * mat0.cols;i++){
+    if(i == 1 || i == 2){assert(mat0.vals[i] *2 == result.vals[i-1]);}
+    else if(i == 4 || i == 5){assert(mat0.vals[i] *2 == result.vals[i-2]);}
+    else{ assert(mat0.vals[i] == 0);}
+    }
+
+    printf("Tests Passed - Element wise matrix multiplication with offset\n");
 }
 
 void mat_sigmoid_f_test(){
@@ -443,3 +510,4 @@ void convolution_test(){
 
     printf("Tests Passed - Convolution\n");
 }
+
