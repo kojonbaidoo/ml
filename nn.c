@@ -35,7 +35,7 @@ int main(void){
     e_rnn_add(&mlp,layer1);
 
     mat_print(e_rnn_cost(mlp,td_x,td_y));
-    e_rnn_train(mlp,td_x,td_y,1,1000);
+    e_rnn_train(mlp,td_x,td_y,1,100);
     mat_print(e_rnn_cost(mlp,td_x,td_y));
 
 
