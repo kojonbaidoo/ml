@@ -27,6 +27,7 @@ void relu_f_test();
 void mat_relu_f_test();
 
 void convolution_test();
+void max_pool_test();
 
 void rand_float_range_test();
 
@@ -53,6 +54,7 @@ int main(void){
     // mlp_alloc_test();
     // mlp_add_test();
     // mlp_forward_test();
+    max_pool_test();
     convolution_test();
     return 0;
 }
@@ -501,6 +503,42 @@ void mlp_forward_test(){
 
     mlp_free(mlp);
     printf("Tests Passed - mlp_forward\n");
+}
+
+void max_pool_test(){
+    Matrix mat0 = mat_alloc(4,4);
+
+    int row_size = 2;
+    int col_size = 3;
+
+    Matrix result = mat_alloc(mat0.rows - row_size + 1, mat0.cols - col_size + 1);
+
+    mat_fill(mat0,0);
+    mat_fill(result,0);
+
+    MAT_INDEX(mat0,0,0) = 1;
+    MAT_INDEX(mat0,0,2) = 2;
+    MAT_INDEX(mat0,0,3) = 1;
+
+    MAT_INDEX(mat0,1,1) = 2;
+    
+    MAT_INDEX(mat0,2,0) = 4;
+    MAT_INDEX(mat0,2,2) = 2;
+    
+    MAT_INDEX(mat0,3,0) = 1;
+    MAT_INDEX(mat0,3,2) = 1;
+    MAT_INDEX(mat0,3,3) = 3;
+
+    max_pool(result, mat0, row_size, col_size);
+
+    assert(MAT_INDEX(result,0,0) == 2);
+    assert(MAT_INDEX(result,0,1) == 2);
+    assert(MAT_INDEX(result,1,0) == 4);
+    assert(MAT_INDEX(result,1,1) == 2);
+    assert(MAT_INDEX(result,2,0) == 4);
+    assert(MAT_INDEX(result,2,1) == 3);
+
+    printf("Tests Passed - Max Pooling\n");
 }
 
 void convolution_test(){

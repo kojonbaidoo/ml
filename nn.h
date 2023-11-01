@@ -249,6 +249,7 @@ float mat_sum_elem(Matrix mat0){
     return sum;
 }
 
+
 void mat_diff(Matrix mat2, Matrix mat0, Matrix mat1){
     assert(mat0.rows == mat1.rows);
     assert(mat0.cols == mat1.cols);
@@ -289,6 +290,26 @@ void mat_div(Matrix mat2, Matrix mat0, float value){
     for(int row = 0; row < mat2.rows;row++){
         for(int col = 0;col < mat2.cols;col++){
             MAT_INDEX(mat2,row,col) = MAT_INDEX(mat0,row,col)/value;
+        }
+    }
+}
+
+// pass a function
+float max_pool_offset(Matrix mat0,int row_size, int col_size, int row_offset, int col_offset){
+    float max = MAT_INDEX(mat0, row_offset, col_offset);
+
+    for(int row = row_offset; row < (row_offset + row_size);row++){
+        for(int col = col_offset; col < (col_offset + col_size); col++){
+            if(MAT_INDEX(mat0,row,col) > max){ max = MAT_INDEX(mat0, row, col);}
+        }
+    }
+    return max;
+}
+
+void max_pool(Matrix result, Matrix mat0, int row_size, int col_size){
+    for(int row = 0; row < result.rows; row++){
+        for(int col = 0; col < result.cols; col++){
+            MAT_INDEX(result, row, col) = max_pool_offset(mat0, row_size, col_size, row, col);
         }
     }
 }
